@@ -1,0 +1,31 @@
+<script>
+  $(document).ready(function() {
+    console.log(sessionStorage.getItem('currentArticleId'));
+    var articleId = sessionStorage.getItem('currentArticleId');
+    if (articleId) {
+        $.ajax({
+            url: 'news.json',
+            dataType: 'json',
+            success: function(data) {
+                var article = data.find(article => article.id === articleId);
+                if (article) {
+                    var articleHtml = `
+                        <div class="card news-article my-5">
+                            <img src="${article.image}" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">${article.title}</h5>
+                                <p class="card-text">${article.text}</p>
+                                <p class="card-text"><small class="text-muted">Last updated ${article.updated}</small></p>
+                            </div>
+                        </div>
+                    `;
+                    $('#view_article').html(articleHtml);
+                } else {
+                    $('#view_article').html('<p>Article not found.</p>');
+                }
+            }
+        });
+    }
+  });
+  </script>
+  

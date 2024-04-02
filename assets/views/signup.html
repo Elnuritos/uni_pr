@@ -1,0 +1,65 @@
+<div class="container mt-5">
+  <h1>Sign Up</h1>
+  <form>
+    <div class="form-group">
+      <label for="inputName">Name</label>
+      <input type="text" class="form-control" id="inputName">
+    </div>
+    <div class="form-group">
+      <label for="inputEmail">Email address</label>
+      <input type="email" class="form-control" id="inputEmail">
+    </div>
+    <div class="form-group">
+      <label for="aboutMeTextarea">About Me</label>
+      <textarea class="form-control" id="aboutMeTextarea" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="inputPassword">Password</label>
+      <input type="password" class="form-control" id="inputPassword">
+    </div>
+    <div class="form-group">
+      <label for="inputConfirmPassword">Confirm Password</label>
+      <input type="password" class="form-control" id="inputConfirmPassword">
+    </div>
+    <button type="submit" class="btn btn-primary">Sign Up</button>
+  </form>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('form').submit(function (e) {
+      e.preventDefault();
+
+
+      var formData = {
+        name: $('#inputName').val(),
+        email: $('#inputEmail').val(),
+        aboutMe: $('#aboutMeTextarea').val(),
+        password: $('#inputPassword').val(),
+        confirmPassword: $('#inputConfirmPassword').val()
+      };
+
+
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+
+
+      $.ajax({
+        type: 'POST',
+        url: 'https://localhost/signup',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function (response) {
+
+          window.location.hash = 'view_home';
+        },
+        error: function (xhr, status, error) {
+
+          alert('An error occurred: ' + error);
+        }
+      });
+    });
+  });
+</script>
