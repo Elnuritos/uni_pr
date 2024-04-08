@@ -1,0 +1,30 @@
+[
+    {
+      "id": "1",
+      "user_id": 1,
+      "title": "Global Market Update",
+      "text": "Stock markets around the world showed mixed results amid speculations of policy changes. More details inside.",
+      "updated": "5 mins ago",
+      "image": "https://via.placeholder.com/600x200",
+      "link": "article1.html"
+    },
+    {
+      "id": "2",
+      "user_id": 1,
+      "title": "Technology Breakthroughs of the Year",
+      "text": "Discover the latest advancements in technology and how they're shaping our future. Read more for in-depth analysis.",
+      "updated": "30 mins ago",
+      "image": "https://via.placeholder.com/600x200",
+      "link": "article2.html"
+    },
+    {
+      "id": "3",
+      "user_id": 2,
+      "title": "Health and Wellness: Tips for a Balanced Life",
+      "text": "In today's fast-paced world, maintaining a balanced life is key. Learn more about wellness strategies that work.",
+      "updated": "1 hour ago",
+      "image": "https://via.placeholder.com/600x200",
+      "link": "article3.html"
+    }
+  ]
+  

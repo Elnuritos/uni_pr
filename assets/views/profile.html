@@ -1,0 +1,144 @@
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="profile-header d-flex align-items-center justify-content-start mb-4">
+                <img src="https://via.placeholder.com/150" class="rounded-circle mr-3" alt="Profile Picture">
+                <div>
+                    <h2>John Doe</h2>
+                    <p class="lead text-muted">johndoe@example.com</p>
+                </div>
+                <button type="button" class="btn btn-primary ml-auto" data-toggle="modal"
+                    data-target="#createArticleModal">Create Article</button>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">About Me</h4>
+                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque imperdiet
+                        libero eu neque facilisis.</p>
+                </div>
+            </div>
+            <div class="modal fade" id="createArticleModal" tabindex="-1" role="dialog"
+                aria-labelledby="createArticleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createArticleModalLabel">Create New Article</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="createArticleForm">
+                                <div class="form-group">
+                                    <label for="articleTitle">Title</label>
+                                    <input type="text" class="form-control" id="articleTitle" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="articleText">Text</label>
+                                    <textarea class="form-control" id="articleText" rows="3" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="articleImage">Image</label>
+                                    <input type="file" class="form-control-file" id="articleImage"
+                                        accept="image/jpeg, image/png">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="container card mb-3">
+                <h4 class="card-title">My Articles</h4>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+
+            $.getJSON('news.json', function (articles) {
+
+                var userArticles = articles.filter(article => article.user_id === 1);
+
+                userArticles.forEach(function (article) {
+                    var articleHtml = `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" class="form-control" value="${article.title}">
+                            </div>
+                            <div class="form-group">
+                                <label>Text</label>
+                                <textarea class="form-control" rows="3">${article.text}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Updated</label>
+                                <input type="text" class="form-control" value="${article.updated}" readonly>
+                            </div>
+                            <img src="${article.image}" class="img-fluid mb-2" alt="Article Image">
+                            <button type="submit" data-article-id="${article.id}" class="btn btn-primary btn-sm btn-update">update</button>
+                        </div>
+                    </div>
+                `;
+
+                    $('.container').append(articleHtml);
+                });
+            });
+            $('#createArticleForm').submit(function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'https://localhost/articles',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (response) {
+
+                        $('#createArticleModal').modal('hide');
+
+                        console.log('Article created successfully');
+                    },
+                    error: function (xhr, status, error) {
+
+                        console.error('Error creating article:', error);
+                    }
+                });
+            });
+            $(document).on('click', '.btn-update', function (e) {
+                e.preventDefault();
+                var articleId = $(this).data('article-id');
+
+
+
+                var $form = $(this).closest('.form-group');
+                var title = $form.find('.article-title').val();
+                var text = $form.find('.article-text').val();
+
+                var articleData = {
+                    title: title,
+                    text: text,
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: `https://localhost/articles/${articleId}`,
+                    contentType: 'application/json',
+                    data: JSON.stringify(articleData),
+                    success: function (response) {
+                        console.log('Article updated successfully');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error updating article:', error);
+                    }
+                });
+            });
+
+        });
+    </script>
