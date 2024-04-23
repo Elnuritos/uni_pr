@@ -1,6 +1,6 @@
 <div class="container mt-5">
   <h1>Login</h1>
-  <form>
+  <form id="loginForm">
     <div class="form-group">
       <label for="inputEmail">Email address</label>
       <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
@@ -9,36 +9,39 @@
       <label for="inputPassword">Password</label>
       <input type="password" class="form-control" id="inputPassword">
     </div>
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-primary" id="loginButton">Login</button>
   </form>
 </div>
 
 <script>
   $(document).ready(function () {
-    $('form').submit(function (e) {
+    $('#loginForm').submit(function (e) {
       e.preventDefault();
-
-
-      var loginData = {
+      let loginData = {
         email: $('#inputEmail').val(),
         password: $('#inputPassword').val()
       };
-
-
+      console.log("Login data being sent:", loginData);
       $.ajax({
         type: 'POST',
-        url: 'https://localhost/login',
+        url: '/login',
         contentType: 'application/json',
         data: JSON.stringify(loginData),
         success: function (response) {
-
-          window.location.hash = 'view_home';
+          console.log(response.message);
+          window.location.hash = '#view_home';
         },
         error: function (xhr, status, error) {
-
-          alert('Login failed: ' + error);
+          if (xhr.status === 401) {
+            alert('Login failed: Incorrect Password');
+          } else if (xhr.status === 404) {
+            alert('Login failed: User not found');
+          } else {
+            alert('Login failed: ' + error);
+          }
         }
       });
     });
   });
+
 </script>

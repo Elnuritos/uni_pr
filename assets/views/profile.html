@@ -2,10 +2,10 @@
     <div class="row">
         <div class="col-md-12">
             <div class="profile-header d-flex align-items-center justify-content-start mb-4">
-                <img src="https://via.placeholder.com/150" class="rounded-circle mr-3" alt="Profile Picture">
+
                 <div>
-                    <h2>John Doe</h2>
-                    <p class="lead text-muted">johndoe@example.com</p>
+                    <h2 id="user_name"></h2>
+                    <p class="lead text-muted" id="user_email"></p>
                 </div>
                 <button type="button" class="btn btn-primary ml-auto" data-toggle="modal"
                     data-target="#createArticleModal">Create Article</button>
@@ -14,8 +14,7 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h4 class="card-title">About Me</h4>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque imperdiet
-                        libero eu neque facilisis.</p>
+                    <p class="card-text" id="user_about_me"></p>
                 </div>
             </div>
             <div class="modal fade" id="createArticleModal" tabindex="-1" role="dialog"
@@ -53,92 +52,113 @@
 
             <div class="container card mb-3">
                 <h4 class="card-title">My Articles</h4>
+                <div id="my_articles"></div>
             </div>
         </div>
     </div>
     <script>
         $(document).ready(function () {
-
-            $.getJSON('news.json', function (articles) {
-
-                var userArticles = articles.filter(article => article.user_id === 1);
-
-                userArticles.forEach(function (article) {
-                    var articleHtml = `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label>Title</label>
-                                <input type="text" class="form-control" value="${article.title}">
-                            </div>
-                            <div class="form-group">
-                                <label>Text</label>
-                                <textarea class="form-control" rows="3">${article.text}</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Updated</label>
-                                <input type="text" class="form-control" value="${article.updated}" readonly>
-                            </div>
-                            <img src="${article.image}" class="img-fluid mb-2" alt="Article Image">
-                            <button type="submit" data-article-id="${article.id}" class="btn btn-primary btn-sm btn-update">update</button>
-                        </div>
-                    </div>
-                `;
-
-                    $('.container').append(articleHtml);
-                });
+            $.ajax({
+                url: '/getUserDetails',
+                method: 'GET',
+                success: function (data) {
+                    $('#user_name').text(data.name);
+                    $('#user_email').text(data.email);
+                    $('#user_about_me').text(data.about_me);
+                },
+                error: function () {
+                    console.log('Error fetching user data');
+                }
+            });
+            $.ajax({
+                url: '/getUserArticles',
+                method: 'GET',
+                dataType: 'json',
+                success: function (articles) {
+                    if (articles.length > 0) {
+                        articles.forEach(article => {
+                            $('#my_articles').append(`
+                                <div class="card mb-3">
+                                    <img src="${article.image}" class="card-img-top" alt="...">
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>Title</label>
+                                            <input type="text" class="form-control article-title" value="${article.title}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Text</label>
+                                            <textarea class="form-control article-text">${article.text}</textarea>
+                                        </div>
+                                        <p class="text-muted">Last updated ${new Date(article.updated_at).toLocaleString()}</p>
+                                        <button type="button" class="btn btn-primary btn-update" data-article-id="${article.id}">Update</button>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        $('#my_articles').html('<p>No articles found.</p>');
+                    }
+                },
+                
+                error: function () {
+                    $('#my_articles').html('<p>Error fetching articles.</p>');
+                }
             });
             $('#createArticleForm').submit(function (e) {
                 e.preventDefault();
-
-                var formData = new FormData(this);
+                let formData = {
+                    title: $('#articleTitle').val(),
+                    text: $('#articleText').val(),
+                };
+                
 
                 $.ajax({
                     type: 'POST',
-                    url: 'https://localhost/articles',
+                    url: '/createArticle',
+                    data: JSON.stringify(formData),
                     processData: false,
                     contentType: false,
-                    data: formData,
-                    success: function (response) {
-
-                        $('#createArticleModal').modal('hide');
-
+                    success: function () {
                         console.log('Article created successfully');
+                        $('#createArticleModal').modal('hide');
+                        // Reload or update the articles list
                     },
-                    error: function (xhr, status, error) {
-
-                        console.error('Error creating article:', error);
+                    error: function (xhr) {
+                        console.error('Error creating article:', xhr.responseText);
                     }
                 });
             });
-            $(document).on('click', '.btn-update', function (e) {
-                e.preventDefault();
-                var articleId = $(this).data('article-id');
-
-
-
-                var $form = $(this).closest('.form-group');
-                var title = $form.find('.article-title').val();
-                var text = $form.find('.article-text').val();
-
-                var articleData = {
-                    title: title,
-                    text: text,
+            $(document).on('click', '.btn-update', function () {
+                let $card = $(this).closest('.card');
+                let articleId = $(this).data('article-id');
+                let $titleInput = $card.find('.article-title');
+                let $textInput = $card.find('.article-text');
+            
+                let articleData = {
+                    title: $titleInput.val(),
+                    text: $textInput.val(),
+                    id: articleId
                 };
-
+            
                 $.ajax({
-                    type: 'PUT',
-                    url: `https://localhost/articles/${articleId}`,
+                    type: 'POST',
+                    url: `/updateArticle`,
                     contentType: 'application/json',
                     data: JSON.stringify(articleData),
-                    success: function (response) {
+                    success: function () {
                         console.log('Article updated successfully');
+                      
                     },
-                    error: function (xhr, status, error) {
-                        console.error('Error updating article:', error);
+                    error: function (xhr) {
+                        console.error('Error updating article:', xhr.responseText);
                     }
                 });
             });
+            
 
+
+
+
+            ///
         });
     </script>

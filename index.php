@@ -1,3 +1,28 @@
+<?php
+
+require_once 'backend/config/Database.php';
+require_once 'backend/models/User.php';
+require_once 'backend/controllers/UserController.php';
+require_once 'backend/controllers/ArticleController.php';
+$routes = require 'backend/routes.php';
+
+
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+foreach ($routes as $path => $route) {
+  if ($uri === $path && $_SERVER['REQUEST_METHOD'] === $route['method']) {
+    header("Content-Type: application/json"); 
+    call_user_func($route['handler']);
+    exit;
+  }
+}
+
+
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,8 +43,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark">
     <a class="navbar-brand" href="#view_home">Latest News</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
