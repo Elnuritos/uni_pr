@@ -1,6 +1,9 @@
+<?php
+header('Content-Type: application/json');
+?>
 <div class="container mt-5">
   <h1>Sign Up</h1>
-  <form>
+  <form id="signUpForm">
     <div class="form-group">
       <label for="inputName">Name</label>
       <input type="text" class="form-control" id="inputName">
@@ -21,45 +24,43 @@
       <label for="inputConfirmPassword">Confirm Password</label>
       <input type="password" class="form-control" id="inputConfirmPassword">
     </div>
-    <button type="submit" class="btn btn-primary">Sign Up</button>
+    <button type="submit" class="btn btn-primary" id="signUpButton">Sign Up</button>
   </form>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
   $(document).ready(function () {
-    $('form').submit(function (e) {
+    $('#signUpForm').submit(function (e) {
       e.preventDefault();
-
-
-      var formData = {
+      let formData = {
         name: $('#inputName').val(),
         email: $('#inputEmail').val(),
         aboutMe: $('#aboutMeTextarea').val(),
         password: $('#inputPassword').val(),
         confirmPassword: $('#inputConfirmPassword').val()
       };
-
-
       if (formData.password !== formData.confirmPassword) {
         alert('Passwords do not match!');
         return;
       }
-
-
       $.ajax({
         type: 'POST',
-        url: 'https://localhost/signup',
+        url: '/signup',
         contentType: 'application/json',
         data: JSON.stringify(formData),
         success: function (response) {
-
-          window.location.hash = 'view_home';
+          console.log('Response:', response);
+          if (response.message === 'User Created Successfully') {
+            window.location.hash = '#view_home';
+          } else {
+            alert(response.message);
+          }
         },
         error: function (xhr, status, error) {
-
-          alert('An error occurred: ' + error);
+          alert('Error: ' + xhr.responseText);
         }
       });
     });
   });
+
 </script>

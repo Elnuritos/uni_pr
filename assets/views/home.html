@@ -3,35 +3,39 @@
 
 <script>
     $(document).ready(function () {
-        // Пример с использованием sessionStorage
-        $('body').on('click', 'a.view-article', function (e) {
-            e.preventDefault();
-            var articleId = $(this).data('article-id');
-            sessionStorage.setItem('currentArticleId', articleId);
-            window.location.hash = 'view_article';
-        });
-
+        // Fetch all articles from the backend
         $.ajax({
-            url: 'news.json',
+            url: '/articles',  // Adjusted to match the correct API endpoint
             dataType: 'json',
             success: function (data) {
-                $.each(data, function (key, article) {
-                    var articleHtml = `
-                <div class="card news-article my-5">
-                  <img src="${article.image}" class="card-img-top" alt="...">
-                  <div class="card-body">
-                    <h5 class="card-title">${article.title}</h5>
-                    <p class="card-text">${article.text}</p>
-                    <p class="card-text"><small class="text-muted">Last updated ${article.updated}</small></p>
-                    <a href="#view_article" data-article-id="${article.id}" class="btn btn-primary view-article">View Article</a>
-
-                  </div>
-                </div>
-              `;
-                    $('#view_home').append(articleHtml);
-                });
+                if (data && data.length > 0) {
+                    $.each(data, function (key, article) {
+                        let articleHtml = `
+                        <div class="card news-article my-5">
+                          <img src="${article.image}" class="card-img-top" alt="...">
+                          <div class="card-body">
+                            <h5 class="card-title">${article.title}</h5>
+                            <p class="card-text">${article.text}</p>
+                            <p class="card-text"><small class="text-muted">Last updated ${article.updated_at}</small></p>
+                            <a href="#view_article" data-article-id="${article.id}" class="btn btn-primary view-article">View Article</a>
+                          </div>
+                        </div>
+                        `;
+                        $('#view_home').append(articleHtml);
+                    });
+                } else {
+                    $('#view_home').append('<p>No articles found.</p>');
+                }
+            },
+            error: function () {
+                $('#view_home').append('<p>Error fetching articles.</p>');
             }
         });
+        $(document).on('click', '.view-article', function(e) {
+            e.preventDefault();
+            let articleId = $(this).data('article-id');
+            sessionStorage.setItem('currentArticleId', articleId);
+            window.location.hash = '#view_article'; 
+        });
     });
-
 </script>
