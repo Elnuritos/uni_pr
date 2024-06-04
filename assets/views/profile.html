@@ -59,9 +59,11 @@
     <script>
         $(document).ready(function () {
             $.ajax({
-                url: '/getUserDetails',
+                url: 'users/getUserDetails',
                 method: 'GET',
+                dataType: 'json',
                 success: function (data) {
+                    console.log(data);
                     $('#user_name').text(data.name);
                     $('#user_email').text(data.email);
                     $('#user_about_me').text(data.about_me);
@@ -71,7 +73,7 @@
                 }
             });
             $.ajax({
-                url: '/getUserArticles',
+                url: 'articles/getUserArticles',
                 method: 'GET',
                 dataType: 'json',
                 success: function (articles) {
@@ -99,7 +101,7 @@
                         $('#my_articles').html('<p>No articles found.</p>');
                     }
                 },
-                
+
                 error: function () {
                     $('#my_articles').html('<p>Error fetching articles.</p>');
                 }
@@ -110,12 +112,17 @@
                     title: $('#articleTitle').val(),
                     text: $('#articleText').val(),
                 };
-                
+                let dataToSend = new FormData(this); // `this` указывает на элемент формы
+                dataToSend.append('title', formData.title);
+                dataToSend.append('text', formData.text);
+                if ($('#articleImage')[0].files[0]) { // Проверка на наличие файла
+                    dataToSend.append('image', $('#articleImage')[0].files[0]);
+                }
 
                 $.ajax({
                     type: 'POST',
-                    url: '/createArticle',
-                    data: JSON.stringify(formData),
+                    url: '/articles/createArticle',
+                    data: dataToSend,
                     processData: false,
                     contentType: false,
                     success: function () {
@@ -133,28 +140,28 @@
                 let articleId = $(this).data('article-id');
                 let $titleInput = $card.find('.article-title');
                 let $textInput = $card.find('.article-text');
-            
+
                 let articleData = {
                     title: $titleInput.val(),
                     text: $textInput.val(),
                     id: articleId
                 };
-            
+
                 $.ajax({
-                    type: 'POST',
-                    url: `/updateArticle`,
+                    type: 'PUT',
+                    url: `/articles/updateArticle/${articleId}`,
                     contentType: 'application/json',
                     data: JSON.stringify(articleData),
                     success: function () {
                         console.log('Article updated successfully');
-                      
+
                     },
                     error: function (xhr) {
                         console.error('Error updating article:', xhr.responseText);
                     }
                 });
             });
-            
+
 
 
 
