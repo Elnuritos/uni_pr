@@ -10,7 +10,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 
-Flight::route('/*', function() {
+Flight::route('/articles', function() {
     // Token is not needed for login or register page
     if (strpos(Flight::request()->url, '/auth/login') === 0) {
         return TRUE;

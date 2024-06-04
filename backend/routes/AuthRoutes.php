@@ -10,8 +10,8 @@ use Firebase\JWT\Key;
 
 Flight::set('auth_service', new AuthService());
 
-Flight::group('/auth', function() {
-    
+Flight::group('/auth', function () {
+
     /**
      * @OA\Post(
      *      path="/auth/login",
@@ -31,32 +31,38 @@ Flight::group('/auth', function() {
      *      ),
      * )
      */
-    Flight::route('POST /login', function() {
+    Flight::route('POST /login', function () {
+
         $payload = Flight::request()->data->getData();
         $user = Flight::get('auth_service')->get_user_by_email($payload['email']);
+        session_start();
+        $_SESSION['user_id'] = $user['id'];
+        
+        if (!$user || $payload['password'] != $user['password']) {
+            $json_response = json_encode(['message' => 'Invalid username or password']);
+            http_response_code(500);
+            echo $json_response;
+            exit;
+        }
 
-        if(!$user || !password_verify($payload['password'], $user['password']))
-            Flight::halt(500, "Invalid username or password");
 
-        unset($user['password']); // We should not encode password in token
         $payload = [
             'user' => $user,
             'iat' => time(), // issued at
             'exp' => time() + 100000 // valid for 1 minute
         ];
 
-        $token = JWT::encode(
-            $payload, 
-            JWT_SECRET, 
-            'HS256'
-        );
+        $token = JWT::encode($payload, JWT_SECRET, 'HS256');
 
-        Flight::json([
+        $response = [
             'user' => array_merge($user, ['token' => $token]),
             'token' => $token
-        ]);
-    });
+        ];
 
+        $json_response = json_encode($response);
+        echo $json_response;
+        exit;
+    });
     /**
      * @OA\Post(
      *      path="/auth/logout",
@@ -71,18 +77,24 @@ Flight::group('/auth', function() {
      *      ),
      * )
      */
-    Flight::route('POST /logout', function() {
+    Flight::route('POST /logout', function () {
         try {
             $token = Flight::request()->getHeader('Authentication');
-            if($token){
+            if ($token) {
                 $decoded_token = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
-                Flight::json([
+                $response = [
                     'jwt_decoded' => $decoded_token,
                     'user' => $decoded_token->user
-                ]);
+                ];
+                $json_response = json_encode($response);
+                echo $json_response;
+                exit;
             }
-        } catch (\Exception $e){
-            Flight::halt(500, $e->getMessage());
-        }            
+        } catch (\Exception $e) {
+            $json_response = json_encode(['message' => $e->getMessage()]);
+            http_response_code(500);
+            echo $json_response;
+            exit;
+        }
     });
 });

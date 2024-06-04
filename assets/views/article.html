@@ -4,8 +4,8 @@
         console.log("Article ID from Storage:", articleId);
         if (articleId) {
             $.ajax({
-                url: '/getArticle',
-                type: 'POST',
+                url: `/articles/getArticle/${articleId}`,
+                type: 'GET',
                 contentType: 'application/json',
                 data: JSON.stringify({ id: articleId }),
                 dataType: 'json',

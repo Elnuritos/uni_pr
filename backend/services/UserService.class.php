@@ -29,4 +29,8 @@ class UserService
     {
         $this->userDao->deleteUser($id);
     }
+    public function getUserById($id)
+    {
+        return $this->userDao->getUserById($id);
+    }
 }

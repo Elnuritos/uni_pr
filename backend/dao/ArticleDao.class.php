@@ -1,48 +1,59 @@
 <?php
 require_once __DIR__ . '/BaseDao.class.php';
 
-class ArticleDao extends BaseDao {
-    
+class ArticleDao extends BaseDao
+{
+
     private $table = 'articles';
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct("articles");
     }
 
-    public function createArticle($data) {
-       
-        return $this->insert($this->table,[
-            'user_id' => htmlspecialchars(strip_tags($data['user_id'])),
+    public function createArticle($data)
+    {
+        session_start();
+        $user_id = $_SESSION['user_id'];
+        return $this->insert($this->table, [
+            'user_id' => htmlspecialchars(strip_tags($user_id)),
             'title' => htmlspecialchars(strip_tags($data['title'])),
             'text' => htmlspecialchars(strip_tags($data['text'])),
-            'image' => htmlspecialchars(strip_tags($data['image']))
+            
         ]);
     }
 
-    public function getAllArticles($offset = 0, $limit = 25, $order = "-id") {
+    public function getAllArticles($offset = 0, $limit = 25, $order = "-id")
+    {
+
         return $this->get_all($offset, $limit, $order);
     }
 
-    public function getArticleById($id) {
+    public function getArticleById($id)
+    {
         return $this->get_by_id($id);
     }
 
-    public function updateArticle($id, $data) {
-      
+    public function updateArticle($id, $data)
+    {
+        session_start();
+        $user_id = $_SESSION['user_id'];
         return $this->update($id, [
+            'user_id' => htmlspecialchars(strip_tags($user_id)),
             'title' => htmlspecialchars(strip_tags($data['title'])),
             'text' => htmlspecialchars(strip_tags($data['text'])),
-            'image' => htmlspecialchars(strip_tags($data['image'])),
+            
         ]);
     }
 
-    public function deleteArticle($id) {
+    public function deleteArticle($id)
+    {
         // Simplify the delete operation
         $this->execute("DELETE FROM " . $this->table . " WHERE id = :id", ['id' => $id]);
     }
 
-    public function getArticlesByUserId($user_id) {
+    public function getArticlesByUserId($user_id)
+    {
         // Use the generic query method from BaseDao
         return $this->query("SELECT * FROM " . $this->table . " WHERE user_id = :user_id ORDER BY updated_at DESC", ['user_id' => $user_id]);
     }
 }
-?>

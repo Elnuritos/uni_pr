@@ -24,11 +24,13 @@
       console.log("Login data being sent:", loginData);
       $.ajax({
         type: 'POST',
-        url: '/login',
+        url: '/auth/login',
         contentType: 'application/json',
         data: JSON.stringify(loginData),
         success: function (response) {
-          console.log(response.message);
+          console.log('Full Response:', response); // Отладочная информация всего ответа
+          console.log('Response user_id:', response.user_id);
+          sessionStorage.setItem('user_id', response.user_id);
           window.location.hash = '#view_home';
         },
         error: function (xhr, status, error) {

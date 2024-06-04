@@ -31,4 +31,8 @@ class UserDao extends BaseDao
         $query = "DELETE FROM " . $this->table . " WHERE id = :id";
         $this->execute($query, ['id' => $id]);
     }
+    public function getUserById($id)
+    {
+        return $this->query_unique("SELECT * FROM " . $this->table . " WHERE id = :id", ['id' => $id]);
+    }
 }

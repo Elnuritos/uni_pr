@@ -31,26 +31,31 @@ header('Content-Type: application/json');
 <script>
   $(document).ready(function () {
     $('#signUpForm').submit(function (e) {
+      let confirmPassword = $('#inputConfirmPassword').val();
       e.preventDefault();
       let formData = {
         name: $('#inputName').val(),
         email: $('#inputEmail').val(),
-        aboutMe: $('#aboutMeTextarea').val(),
+        about_me: $('#aboutMeTextarea').val(),
         password: $('#inputPassword').val(),
-        confirmPassword: $('#inputConfirmPassword').val()
+
       };
-      if (formData.password !== formData.confirmPassword) {
+      if (formData.password !== confirmPassword) {
         alert('Passwords do not match!');
         return;
       }
       $.ajax({
         type: 'POST',
-        url: '/signup',
+        url: '/users/add',
         contentType: 'application/json',
         data: JSON.stringify(formData),
         success: function (response) {
-          console.log('Response:', response);
-          if (response.message === 'User Created Successfully') {
+          if (typeof response === 'string') {
+            response = JSON.parse(response);
+        }
+          console.log(response);
+          console.log(response.message=='User created successfully');
+          if (response.message == 'User created successfully') {
             window.location.hash = '#view_home';
           } else {
             alert(response.message);

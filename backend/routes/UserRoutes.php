@@ -4,7 +4,7 @@ require_once __DIR__ . '/../services/UserService.class.php';
 
 
 Flight::group('/users', function () {
- /**
+    /**
      * @OA\Post(
      *   path="/users/add",
      *   tags={"users"},
@@ -33,10 +33,14 @@ Flight::group('/users', function () {
         $data = Flight::request()->data->getData();
         $userService = new UserService();
         if ($userService->createUser($data)) {
-            Flight::json(['message' => 'User created successfully'], 201);
+            $json_response = json_encode(['message' => 'User created successfully']);
+            echo $json_response;
         } else {
-            Flight::json(['message' => 'User could not be created'], 400);
+            $json_response = json_encode(['message' => 'User could not be created']);
+            http_response_code(400);
+            echo $json_response;
         }
+        exit;
     });
     /**
      * @OA\Put(
@@ -110,4 +114,20 @@ Flight::group('/users', function () {
             Flight::json(['message' => 'User could not be deleted'], 400);
         }
     });
+    Flight::route('GET /getUserDetails', function () {
+        session_start();
+        $user_id = $_SESSION['user_id'];
+        $userService = new UserService();
+        $user = $userService->getUserById($user_id);
+        if ($user) {
+            $json_response = json_encode($user);
+            echo $json_response;
+        } else {
+            $json_response = json_encode(['message' => 'User not found']);
+            http_response_code(404);
+            echo $json_response;
+        }
+        exit;
+    });
+    
 });
