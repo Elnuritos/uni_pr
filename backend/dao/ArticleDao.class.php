@@ -10,14 +10,14 @@ class ArticleDao extends BaseDao
         parent::__construct("articles");
     }
 
-    public function createArticle($data)
+    public function createArticle($data,$user_id)
     {
-        session_start();
-        $user_id = $_SESSION['user_id'];
+    
         return $this->insert($this->table, [
             'user_id' => htmlspecialchars(strip_tags($user_id)),
             'title' => htmlspecialchars(strip_tags($data['title'])),
             'text' => htmlspecialchars(strip_tags($data['text'])),
+            'image' => htmlspecialchars(strip_tags($data['image'])),
             
         ]);
     }
@@ -33,16 +33,19 @@ class ArticleDao extends BaseDao
         return $this->get_by_id($id);
     }
 
-    public function updateArticle($id, $data)
+    public function updateArticle($id, $data,$imagePath=null)
     {
-        session_start();
-        $user_id = $_SESSION['user_id'];
-        return $this->update($id, [
-            'user_id' => htmlspecialchars(strip_tags($user_id)),
+        
+        $articleData = [
             'title' => htmlspecialchars(strip_tags($data['title'])),
-            'text' => htmlspecialchars(strip_tags($data['text'])),
-            
-        ]);
+            'text' => htmlspecialchars(strip_tags($data['text']))
+        ];
+    
+        if ($imagePath) {
+            $articleData['image'] = htmlspecialchars(strip_tags($imagePath));
+        }
+    
+        return $this->update($id, $articleData);
     }
 
     public function deleteArticle($id)

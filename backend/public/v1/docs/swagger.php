@@ -1,12 +1,11 @@
 <?php
 
-require __DIR__ . '/../../../vendor/autoload.php';
+require __DIR__ . '/../../../../vendor/autoload.php';
 
-define('BASE_URL', 'http://localhost:8000/swagger');
+
 
 error_reporting(0);
-
-$openapi = \OpenApi\Generator::scan(['../../../routes', './']);
+$openapi = \OpenApi\Generator::scan([__DIR__ . '/../../routes']);
 header('Content-Type: application/x-yaml');
 echo $openapi->toYaml();
 ?>

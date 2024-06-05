@@ -1,5 +1,6 @@
 <?php
-
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 require_once __DIR__ . '/../services/UserService.class.php';
 
 
@@ -115,8 +116,21 @@ Flight::group('/users', function () {
         }
     });
     Flight::route('GET /getUserDetails', function () {
-        session_start();
-        $user_id = $_SESSION['user_id'];
+        $authHeader = Flight::request()->getHeader("Authorization");
+        if (!$authHeader) {
+            Flight::json(['error' => 'Authorization header is missing'], 401);
+            return false;
+        }
+
+        $parts = explode(" ", $authHeader);
+        if (count($parts) < 2 || strtolower($parts[0]) !== 'bearer') {
+            Flight::json(['error' => 'Authorization header must be Bearer token'], 401);
+            return false;
+        }
+
+        $token = $parts[1];
+        $decoded_token = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
+        $user_id = $decoded_token->user->id;
         $userService = new UserService();
         $user = $userService->getUserById($user_id);
         if ($user) {
@@ -129,5 +143,4 @@ Flight::group('/users', function () {
         }
         exit;
     });
-    
 });

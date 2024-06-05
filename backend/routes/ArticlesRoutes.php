@@ -1,7 +1,9 @@
 <?php
 
-require_once __DIR__ . '/../services/ArticleService.class.php';
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
+require_once __DIR__ . '/../services/ArticleService.class.php';
 Flight::group('/articles', function () {
 
     /**
@@ -29,8 +31,36 @@ Flight::group('/articles', function () {
      */
     Flight::route('POST /createArticle', function () {
         $data = Flight::request()->data->getData();
+        $files = Flight::request()->files;
+        $authHeader = Flight::request()->getHeader("Authorization");
+        if (!$authHeader) {
+            Flight::json(['error' => 'Authorization header is missing'], 401);
+            return false;
+        }
+
+        $parts = explode(" ", $authHeader);
+        if (count($parts) < 2 || strtolower($parts[0]) !== 'bearer') {
+            Flight::json(['error' => 'Authorization header must be Bearer token'], 401);
+            return false;
+        }
+
+        $token = $parts[1];
+
+        $decoded_token = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
+        $user_id = $decoded_token->user->id;
+        if (isset($files['image'])) {
+            $image = $files['image'];
+            $imageName = basename($image['name']);
+            $physicalPath = __DIR__ . '/../img/' . $imageName; // Физический путь на сервере
+            $relativePath = 'backend/img/' . $imageName; // Относительный путь для клиента
+
+            move_uploaded_file($image['tmp_name'], $physicalPath);
+            $data['image'] = $relativePath;
+        } else {
+            $data['image'] = null;
+        }
         $articleService = new ArticleService();
-        if ($articleService->createArticle($data)) {
+        if ($articleService->createArticle($data, $user_id)) {
             Flight::json(['message' => 'Article created successfully'], 201);
         } else {
             Flight::json(['message' => 'Article could not be created'], 400);
@@ -66,12 +96,26 @@ Flight::group('/articles', function () {
      *     )
      * )
      */
-    Flight::route('PUT /updateArticle/@article_id', function ($article_id) {
-        $inputData = Flight::request()->getBody();
-        $data = json_decode($inputData, true);
-        var_dump($data);
+    Flight::route('POST /updateArticle/@article_id', function ($article_id) {
+        $files = Flight::request()->files;
+        $data = Flight::request()->data->getData();
         $articleService = new ArticleService();
-        $success = $articleService->updateArticle($article_id, $data);
+        $imagePath = null;
+
+        if (isset($files['image'])) {
+            $image = $files['image'];
+            $imageName = basename($image['name']);
+            $physicalPath = __DIR__ . '/../img/' . $imageName;
+            $relativePath = 'backend/img/' . $imageName;
+
+            if (move_uploaded_file($image['tmp_name'], $physicalPath)) {
+                $imagePath = $relativePath;
+            } else {
+                error_log("Error moving uploaded file");
+            }
+        }
+
+        $success = $articleService->updateArticle($article_id, $data, $imagePath);
         
         if ($success) {
             $json_response = json_encode(['message' => 'Article updated successfully']);
@@ -218,8 +262,22 @@ Flight::group('/articles', function () {
      * )
      */
     Flight::route('GET /getUserArticles', function () {
-        session_start();
-        $user_id = $_SESSION['user_id'];
+        $authHeader = Flight::request()->getHeader("Authorization");
+        if (!$authHeader) {
+            Flight::json(['error' => 'Authorization header is missing'], 401);
+            return false;
+        }
+
+        $parts = explode(" ", $authHeader);
+        if (count($parts) < 2 || strtolower($parts[0]) !== 'bearer') {
+            Flight::json(['error' => 'Authorization header must be Bearer token'], 401);
+            return false;
+        }
+
+        $token = $parts[1];
+
+        $decoded_token = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
+        $user_id = $decoded_token->user->id;
         $articleService = new ArticleService();
         $articles = $articleService->getArticlesByUserId($user_id);
         if ($articles) {

@@ -8,8 +8,8 @@ class ArticleService {
         $this->articleDao = new ArticleDao();
     }
 
-    public function createArticle($data) {
-        return $this->articleDao->createArticle($data);
+    public function createArticle($data,$userId) {
+        return $this->articleDao->createArticle($data,$userId);
     }
 
     public function getAllArticles($offset, $limit, $order) {
@@ -20,8 +20,8 @@ class ArticleService {
         return $this->articleDao->getArticleById($id);
     }
 
-    public function updateArticle($id, $data) {
-        return $this->articleDao->updateArticle($id, $data);
+    public function updateArticle($id, $data,$imagePath) {
+        return $this->articleDao->updateArticle($id, $data,$imagePath);
     }
 
     public function deleteArticle($id) {

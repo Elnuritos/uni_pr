@@ -58,10 +58,13 @@
     </div>
     <script>
         $(document).ready(function () {
+            let token = sessionStorage.getItem('jwtToken');
+            let user_id = sessionStorage.getItem('user_id');
             $.ajax({
                 url: 'users/getUserDetails',
                 method: 'GET',
                 dataType: 'json',
+                headers: { 'Authorization': 'Bearer ' + token },
                 success: function (data) {
                     console.log(data);
                     $('#user_name').text(data.name);
@@ -72,13 +75,18 @@
                     console.log('Error fetching user data');
                 }
             });
+
+
             $.ajax({
                 url: 'articles/getUserArticles',
                 method: 'GET',
                 dataType: 'json',
+                data: JSON.stringify({ id: user_id }),
+                headers: { 'Authorization': 'Bearer ' + token },
                 success: function (articles) {
                     if (articles.length > 0) {
                         articles.forEach(article => {
+                            
                             $('#my_articles').append(`
                                 <div class="card mb-3">
                                     <img src="${article.image}" class="card-img-top" alt="...">
@@ -90,6 +98,10 @@
                                         <div class="form-group">
                                             <label>Text</label>
                                             <textarea class="form-control article-text">${article.text}</textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="articleImage">Update Image</label>
+                                            <input type="file" class="form-control-file article-image" accept="image/*">
                                         </div>
                                         <p class="text-muted">Last updated ${new Date(article.updated_at).toLocaleString()}</p>
                                         <button type="button" class="btn btn-primary btn-update" data-article-id="${article.id}">Update</button>
@@ -112,6 +124,7 @@
                     title: $('#articleTitle').val(),
                     text: $('#articleText').val(),
                 };
+                let token = sessionStorage.getItem('jwtToken');
                 let dataToSend = new FormData(this); // `this` указывает на элемент формы
                 dataToSend.append('title', formData.title);
                 dataToSend.append('text', formData.text);
@@ -123,6 +136,7 @@
                     type: 'POST',
                     url: '/articles/createArticle',
                     data: dataToSend,
+                    headers: { 'Authorization': 'Bearer ' + token },
                     processData: false,
                     contentType: false,
                     success: function () {
@@ -140,24 +154,32 @@
                 let articleId = $(this).data('article-id');
                 let $titleInput = $card.find('.article-title');
                 let $textInput = $card.find('.article-text');
-
-                let articleData = {
-                    title: $titleInput.val(),
-                    text: $textInput.val(),
-                    id: articleId
-                };
-
+                let $imageInput = $card.find('.article-image');
+        
+                let formData = new FormData();
+                formData.append('title', $titleInput.val());
+                formData.append('text', $textInput.val());
+        
+                if ($imageInput.length && $imageInput[0].files.length > 0) {
+                    formData.append('image', $imageInput[0].files[0]);
+                }
+        
+                let token = sessionStorage.getItem('jwtToken');
                 $.ajax({
-                    type: 'PUT',
+                    type: 'POST',
                     url: `/articles/updateArticle/${articleId}`,
-                    contentType: 'application/json',
-                    data: JSON.stringify(articleData),
+                    processData: false, 
+                    contentType: false,  
+                    data: formData,
+                    headers: { 'Authorization': 'Bearer ' + token },
                     success: function () {
                         console.log('Article updated successfully');
+                        location.reload();
 
                     },
                     error: function (xhr) {
                         console.error('Error updating article:', xhr.responseText);
+                        location.reload();
                     }
                 });
             });

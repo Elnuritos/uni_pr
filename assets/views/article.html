@@ -1,12 +1,15 @@
 <script>
     $(document).ready(function () {
         let articleId = sessionStorage.getItem('currentArticleId');
+        let token = sessionStorage.getItem('jwtToken');
+        console.log(token);
         console.log("Article ID from Storage:", articleId);
         if (articleId) {
             $.ajax({
                 url: `/articles/getArticle/${articleId}`,
                 type: 'GET',
                 contentType: 'application/json',
+                headers: { 'Authorization': 'Bearer ' + token },
                 data: JSON.stringify({ id: articleId }),
                 dataType: 'json',
                 success: function (article) {

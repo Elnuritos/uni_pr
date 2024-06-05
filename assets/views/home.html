@@ -4,9 +4,11 @@
 <script>
     $(document).ready(function () {
         // Fetch all articles from the backend
+        let token = sessionStorage.getItem('jwtToken');
         $.ajax({
             url: '/articles', 
             dataType: 'json',
+            headers: { 'Authorization': 'Bearer ' + token },
             success: function (data) {
                 try {
                     if (data && data.length > 0) {

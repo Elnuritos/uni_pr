@@ -28,10 +28,11 @@
         contentType: 'application/json',
         data: JSON.stringify(loginData),
         success: function (response) {
-          console.log('Full Response:', response); // Отладочная информация всего ответа
-          console.log('Response user_id:', response.user_id);
-          sessionStorage.setItem('user_id', response.user_id);
+
+          sessionStorage.setItem('jwtToken', response.token);
+          sessionStorage.setItem('user_id', response.id);
           window.location.hash = '#view_home';
+          window.location.reload();
         },
         error: function (xhr, status, error) {
           if (xhr.status === 401) {

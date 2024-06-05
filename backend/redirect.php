@@ -74,7 +74,6 @@
 
 
     <script>
-        console.log("DOM fully loaded and parsed");
         window.location.hash = "#view_home";
     </script>
 </body>
